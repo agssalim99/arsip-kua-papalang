@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Arsip Digital KUA Papalang</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --sidebar-bg: #111827;
+      --sidebar-hover: #1f2937;
+      --primary-blue: #2563eb;
+      --primary-blue-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-green: #10b981;
+      --accent-orange: #f97316;
+      --accent-pink: #ec4899;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-dark); overflow-x: hidden; }
+
+    /* --- LOGIN PAGE --- */
+    #loginPage {
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+      background: var(--sidebar-bg); padding: 20px;
+    }
+    .login-card {
+      background: white; width: 100%; max-width: 400px; padding: 36px 28px;
+      border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); text-align: center;
+    }
+    .login-logo {
+      width: 56px; height: 56px; background: #eff6ff; color: var(--primary-blue);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 24px;
+    }
+
+    /* --- MAIN LAYOUT --- */
+    #mainApp { display: none; min-height: 100vh; }
+    
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+      background: var(--sidebar-bg); color: #94a3b8; overflow-y: auto; z-index: 100;
+    }
+    .sidebar-header {
+      padding: 20px; display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid #1f2937;
+    }
+    .sidebar-header i { font-size: 24px; color: var(--accent-green); }
+    .sidebar-brand h3 { font-size: 15px; font-weight: 700; color: white; }
+    .sidebar-brand p { font-size: 10px; color: #64748b; }
+
+    .menu-group-label {
+      padding: 16px 20px 6px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; color: #475569; letter-spacing: 0.5px;
+    }
+
+    .menu-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+      color: #94a3b8; transition: all 0.2s; text-decoration: none;
+    }
+    .menu-item:hover, .menu-item.active {
+      color: white; background: var(--sidebar-hover);
+    }
+    .menu-item.active {
+      background: var(--primary-blue); color: white; border-radius: 8px; margin: 0 10px; width: calc(100% - 20px);
+    }
+    .menu-left { display: flex; align-items: center; gap: 12px; }
+    .badge-count {
+      background: #1f2937; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;
+    }
+
+    .content-wrapper { margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .top-nav {
+      background: #0f172a; padding: 12px 24px; display: flex; justify-content: space-between;
+      align-items: center; color: white; position: sticky; top: 0; z-index: 90;
+    }
+    .search-box {
+      display: flex; align-items: center; background: #1e293b; padding: 8px 14px;
+      border-radius: 8px; width: 320px; border: 1px solid #334155;
+    }
+    .search-box input {
+      border: none; background: transparent; outline: none; width: 100%;
+      margin-left: 8px; font-size: 12px; color: white;
+    }
+
+    /* BANNER WELCOME (Persis Gambar 2) */
+    .welcome-banner {
+      background: var(--primary-blue-gradient); border-radius: 16px; padding: 24px;
+      color: white; margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .welcome-badge {
+      display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.2);
+      border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 8px;
+    }
+    .welcome-banner h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .welcome-banner p { font-size: 12px; opacity: 0.9; max-width: 600px; }
+
+    /* STATS GRID */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: white; padding: 18px; border-radius: 14px; border: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .stat-card h4 { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+    .stat-card .val { font-size: 24px; font-weight: 800; }
+    .stat-card .sub { font-size: 11px; color: var(--accent-green); margin-top: 4px; font-weight: 600; }
+    .stat-icon-bg {
+      width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+
+    /* TABLE */
+    .table-card { background: white; border-radius: 14px; border: 1px solid var(--border-color); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 18px; font-size: 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+    th { background: #f8fafc; font-weight: 600; color: var(--text-muted); }
+
+    .btn-action { padding: 5px 10px; border-radius: 6px; font-size: 11px; text-decoration: none; border: none; cursor: pointer; }
+    .btn-view { background: #e0f2fe; color: #0284c7; }
+    .btn-delete { background: #fee2e2; color: #dc2626; margin-left: 4px; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+    .modal-content { background: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 480px; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage">
+    <div class="login-card">
+      <div class="login-logo"><i class="fa-solid fa-kaaba"></i></div>
+      <h2 style="font-size: 18px; font-weight: 700;">Arsip Digital KUA</h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 20px;">Kecamatan Papalang</p>
+      <form onsubmit="handleLogin(event)">
+        <input type="email" value="admin@kua.go.id" style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px;" required>
+        <input type="password" value="admin123" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px;" required>
+        <button type="submit" style="width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Masuk Aplikasi</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp">
+    <!-- SIDEBAR PERSIS GAMBAR 2 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <i class="fa-solid fa-mosque"></i>
+        <div class="sidebar-brand">
+          <h3>KUA PAPALANG</h3>
+          <p>Arsip Digital & Administrasi Surat</p>
+        </div>
+      </div>
+
+      <div class="menu-group-label">Menu Utama</div>
+      <a class="menu-item active" onclick="filterData('Dashboard', this)">
+        <div class="menu-left"><i class="fa-solid fa-chart-pie"></i> Dashboard</div>
+      </a>
+      <a class="menu-item" onclick="filterData('Surat Masuk', this)">
+        <div class="menu-left"><i class="fa-solid fa-inbox"></i> Surat Masuk</div>
+        <span class="badge-count" id="badgeMasuk">1</span>
+      </a>
+
+      <div class="menu-group-label">Surat Keluar</div>
+      <a class="menu-item" onclick="filterData('Semua Surat Keluar', this)">
+        <div class="menu-left"><i class="fa-solid fa-folder-open" style="color: #f59e0b;"></i> Semua Surat Keluar</div>
+        <span class="badge-count" id="badgeKeluar">6</span>
+      </a>
+      <a class="menu-item" onclick="filterData('Rekomendasi Nikah', this)">
+        <div class="menu-left"><i class="fa-solid fa-heart" style="color: #ec4899;"></i> Rekomendasi Nikah</div>
+      </a>
+      <a class="menu-item" onclick="filterData('Surat Tugas Pelayanan Nikah', this)">
+        <div class="menu-left"><i class="fa-solid fa-user-tie" style="color: #3b82f6;"></i> Tugas Pelayanan Nikah</div>
+      </a>
+      <a class="menu-item" onclick="filterData('Surat Tugas Biasa', this)">
+        <div class="menu-left"><i class="fa-solid fa-briefcase" style="color: #8b5cf6;"></i> Surat Tugas Biasa</div>
+      </a>
+      <a class="menu-item" onclick="filterData('Surat Tugas Dinas Luar', this)">
+        <div class="menu-left"><i class="fa-solid fa-car" style="color: #f97316;"></i> Surat Tugas Dinas Luar</div>
+      </a>
+      <a class="menu-item" onclick="filterData('Nota Pesanan', this)">
+        <div class="menu-left"><i class="fa-solid fa-file-invoice" style="color: #10b981;"></i> Nota Pesanan</div>
+      </a>
+
+      <div class="menu-group-label">Aksi</div>
+      <a class="menu-item" onclick="logout()" style="color: #ef4444;">
+        <div class="menu-left"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+      </a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-wrapper">
+      <div class="top-nav">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <i class="fa-solid fa-bars" style="cursor: pointer;"></i>
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color: #64748b;"></i>
+            <input type="text" id="searchInput" placeholder="Cari nomor surat, perihal, atau jenis surat..." onkeyup="searchTable()">
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 11px; background: #1e293b; padding: 4px 8px; border-radius: 6px; color: #10b981;"><i class="fa-solid fa-rotate"></i> Cloud Sync</span>
+          <div style="text-align: right;">
+            <div style="font-size: 12px; font-weight: 700;">Admin KUA</div>
+            <span style="font-size: 9px; background: #f59e0b; color: black; padding: 1px 4px; border-radius: 3px; font-weight: 700;">ADMIN</span>
+          </div>
+          <div style="width: 32px; height: 32px; background: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">AD</div>
+        </div>
+      </div>
+
+      <div style="padding: 24px; flex: 1;">
+        <!-- BANNER WELCOME PERSIS GAMBAR 2 -->
+        <div class="welcome-banner" id="bannerWelcome">
+          <span class="welcome-badge">Selamat Datang di Portal Resmi</span>
+          <h2>Sistem Arsip Digital KUA Papalang</h2>
+          <p>Pengelolaan dokumen administrasi, surat masuk, dan surat keluar Kantor Urusan Agama Kecamatan Papalang secara terpusat, aman, dan mudah diakses.</p>
+        </div>
+
+        <!-- STATS CARDS PERSIS GAMBAR 2 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div>
+              <h4>TOTAL DOKUMEN</h4>
+              <div class="val" id="statTotal">7</div>
+              <div class="sub"><i class="fa-solid fa-circle-check"></i> Terarsip dengan aman</div>
+            </div>
+            <div class="stat-icon-bg" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-folder"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <h4>SURAT MASUK</h4>
+              <div class="val" id="statMasuk">1</div>
+              <div class="sub" style="color: #64748b;">Disposisi & Instansi</div>
+            </div>
+            <div class="stat-icon-bg" style="background: #d1fae5; color: #059669;"><i class="fa-solid fa-inbox"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <h4>SURAT KELUAR</h4>
+              <div class="val" id="statKeluar">6</div>
+              <div class="sub" style="color: #f97316;">Seluruh Kategori</div>
+            </div>
+            <div class="stat-icon-bg" style="background: #ffedd5; color: #ea580c;"><i class="fa-solid fa-paper-plane"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <h4>REKOMENDASI NIKAH</h4>
+              <div class="val" id="statRekom">2</div>
+              <div class="sub" style="color: #ec4899;"><i class="fa-solid fa-heart"></i> Pelayanan Nikah</div>
+            </div>
+            <div class="stat-icon-bg" style="background: #fce7f3; color: #db2777;"><i class="fa-solid fa-file-signature"></i></div>
+          </div>
+        </div>
+
+        <!-- BUTTON UPLOAD & TITLE TABLE -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700;" id="tableHeading">Distribusi & Daftar Dokumen Terbaru</h3>
+          <button style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i> Upload Dokumen
+          </button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Jenis Surat</th>
+                <th>Nomor Surat</th>
+                <th>Perihal / Nama</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="documentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL UPLOAD -->
+  <div class="modal" id="uploadModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 16px; font-size: 16px;">Upload Dokumen Baru</h3>
+      <form id="uploadForm" onsubmit="handleUpload(event)">
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Tanggal Surat</label>
+          <input type="date" id="docDate" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Kategori Utama</label>
+          <select id="docCategory" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" onchange="updateTypeOptions()" required>
+            <option value="Surat Masuk">Surat Masuk</option>
+            <option value="Surat Keluar">Surat Keluar</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Jenis Surat</label>
+          <select id="docType" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" required></select>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Nomor Surat</label>
+          <input type="text" id="docNumber" placeholder="028/31/IX/2026" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Perihal / Nama Pemohon</label>
+          <input type="text" id="docTitle" placeholder="Layanan Pernikahan..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Pilih File PDF</label>
+          <input type="file" id="docFile" required>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button type="button" style="padding: 8px 14px; background: #94a3b8; color: white; border: none; border-radius: 6px;" onclick="closeModal()">Batal</button>
+          <button type="submit" id="btnSubmit" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px;">Simpan Dokumen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI:
+    const GOOGLE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4ztnrRXXdEzobbYQLIL6fMGUfp27Zxq_-U6m3Ywskov1nQz6yIIt5oY4kPK203iuAuA/exec"; 
+
+    let documents = [
+      { id: "1", date: "2026-09-15", category: "Surat Masuk", type: "Surat Masuk", number: "045/KUA.21/IX/2026", title: "Undangan Rakor Keagamaan Kanwil", fileUrl: "#" },
+      { id: "2", date: "2026-09-18", category: "Surat Keluar", type: "Rekomendasi Nikah", number: "412/KUA.21/09/2026", title: "Rekomendasi Nikah a.n. Ahmad & Siti", fileUrl: "#" },
+      { id: "3", date: "2026-09-20", category: "Surat Keluar", type: "Rekomendasi Nikah", number: "415/KUA.21/09/2026", title: "Rekomendasi Nikah a.n. Budi", fileUrl: "#" },
+      { id: "4", date: "2026-09-22", category: "Surat Keluar", type: "Surat Tugas Pelayanan Nikah", number: "088/ST/KUA.21/IX/2026", title: "Tugas Pelayanan Nikah Desa Bonda", fileUrl: "#" },
+      { id: "5", date: "2026-09-23", category: "Surat Keluar", type: "Surat Tugas Biasa", number: "090/ST/KUA.21/IX/2026", title: "Rapat Koordinasi Kecamatan", fileUrl: "#" },
+      { id: "6", date: "2026-09-25", category: "Surat Keluar", type: "Surat Tugas Dinas Luar", number: "095/ST/KUA.21/IX/2026", title: "Dinas Luar Kabupaten Mamuju", fileUrl: "#" },
+      { id: "7", date: "2026-09-26", category: "Surat Keluar", type: "Nota Pesanan", number: "012/NP/KUA.21/IX/2026", title: "Pengadaan ATK Kantor Q3", fileUrl: "#" }
+    ];
+
+    const typesMap = {
+      "Surat Masuk": ["Surat Masuk Umum"],
+      "Surat Keluar": ["Rekomendasi Nikah", "Surat Tugas Pelayanan Nikah", "Surat Tugas Biasa", "Surat Tugas Dinas Luar", "Nota Pesanan"]
+    };
+
+    let activeFilter = "Dashboard";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateTypeOptions();
+      renderTable();
+      loadDataFromSpreadsheet();
+    });
+
+    function handleLogin(e) {
+      e.preventDefault();
+      document.getElementById("loginPage").style.display = "none";
+      document.getElementById("mainApp").style.display = "block";
+    }
+
+    function logout() {
+      document.getElementById("mainApp").style.display = "none";
+      document.getElementById("loginPage").style.display = "flex";
+    }
+
+    function filterData(category, element) {
+      activeFilter = category;
+      document.querySelectorAll(".menu-item").forEach(el => el.classList.remove("active"));
+      element.classList.add("active");
+
+      document.getElementById("bannerWelcome").style.display = (category === "Dashboard") ? "block" : "none";
+      document.getElementById("tableHeading").innerText = "Daftar Dokumen: " + category;
+      renderTable();
+    }
+
+    function renderTable(dataOverride = null) {
+      const tbody = document.getElementById("documentTableBody");
+      tbody.innerHTML = "";
+
+      let data = dataOverride || documents;
+
+      if (activeFilter === "Surat Masuk") {
+        data = data.filter(d => d.category === "Surat Masuk");
+      } else if (activeFilter === "Semua Surat Keluar") {
+        data = data.filter(d => d.category === "Surat Keluar");
+      } else if (activeFilter !== "Dashboard") {
+        data = data.filter(d => d.type === activeFilter);
+      }
+
+      data.forEach((doc, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${doc.date}</td>
+          <td><span style="padding:2px 6px; background:#f1f5f9; border-radius:4px; font-size:10px;">${doc.type}</span></td>
+          <td><b>${doc.number}</b></td>
+          <td>${doc.title}</td>
+          <td>
+            <a href="${doc.fileUrl || '#'}" target="_blank" class="btn-action btn-view"><i class="fa-solid fa-eye"></i> Lihat</a>
+            <button onclick="deleteDoc('${doc.id}')" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update counters
+      document.getElementById("statTotal").innerText = documents.length;
+      document.getElementById("statMasuk").innerText = documents.filter(d => d.category === "Surat Masuk").length;
+      document.getElementById("statKeluar").innerText = documents.filter(d => d.category === "Surat Keluar").length;
+      document.getElementById("statRekom").innerText = documents.filter(d => d.type === "Rekomendasi Nikah").length;
+      
+      document.getElementById("badgeMasuk").innerText = documents.filter(d => d.category === "Surat Masuk").length;
+      document.getElementById("badgeKeluar").innerText = documents.filter(d => d.category === "Surat Keluar").length;
+    }
+
+    function searchTable() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = documents.filter(d => d.number.toLowerCase().includes(q) || d.title.toLowerCase().includes(q) || d.type.toLowerCase().includes(q));
+      renderTable(filtered);
+    }
+
+    function openModal() { document.getElementById("uploadModal").style.display = "flex"; }
+    function closeModal() { document.getElementById("uploadModal").style.display = "none"; }
+
+    function updateTypeOptions() {
+      const cat = document.getElementById("docCategory").value;
+      const select = document.getElementById("docType");
+      select.innerHTML = "";
+      typesMap[cat].forEach(t => {
+        select.innerHTML += `<option value="${t}">${t}</option>`;
+      });
+    }
+
+    async function handleUpload(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmit");
+      btn.innerText = "Mengunggah..."; btn.disabled = true;
+
+      const file = document.getElementById("docFile").files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async function() {
+        const payload = {
+          action: "addDocument",
+          date: document.getElementById("docDate").value,
+          category: document.getElementById("docCategory").value,
+          type: document.getElementById("docType").value,
+          number: document.getElementById("docNumber").value,
+          title: document.getElementById("docTitle").value,
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: reader.result
+        };
+
+        if (GOOGLE_APP_SCRIPT_URL) {
+          const res = await fetch(GOOGLE_APP_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+          const resJson = await res.json();
+          if(resJson.status === "success") {
+            alert("Dokumen Berhasil Disimpan!");
+            await loadDataFromSpreadsheet();
+          }
+        } else {
+          payload.id = Date.now().toString();
+          payload.fileUrl = URL.createObjectURL(file);
+          documents.unshift(payload);
+          renderTable();
+          alert("Berhasil disimpan (Mode Preview)!");
+        }
+        btn.innerText = "Simpan Dokumen"; btn.disabled = false;
+        closeModal();
+      };
+    }
+
+    async function loadDataFromSpreadsheet() {
+      if (!GOOGLE_APP_SCRIPT_URL) return;
+      try {
+        const res = await fetch(`${GOOGLE_APP_SCRIPT_URL}?action=getDocuments`);
+        const json = await res.json();
+        if(json.status === "success") {
+          documents = json.data;
+          renderTable();
+        }
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>
